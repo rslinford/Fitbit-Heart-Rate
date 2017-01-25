@@ -252,3 +252,4 @@ paket-files/
 *.sln.iml
 /Fitbit-Heart-Rate.pyproj
 /Fitbit-Heart-Rate.sln
+/fitbit-heart-rate.json
