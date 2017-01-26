@@ -16,7 +16,10 @@ default_config = {
    'Start_Date': '2017-01-25',
    'End_Date': '2017-01-26',
 }
-
+"""
+References:
+http://shishu.info/2016/06/how-to-download-your-fitbit-second-level-data-without-coding/
+"""
 def read_data(config):
    # TODO: get OAuth Token programmatically. 
    # For now, please generate token by hand. Use the Fitbit Tutorial page:
