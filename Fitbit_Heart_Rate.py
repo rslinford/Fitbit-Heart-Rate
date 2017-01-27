@@ -13,7 +13,7 @@ default_config = {
    'OAuth_Token': 'MyToken',
    'Base_API_URI': 'https://api.fitbit.com/',
    'Redirect_URI': 'http://127.0.0.1:8080/',
-   'Start_Date': '2017-01-25',
+   'Start_Date': '2017-01-24',
    'End_Date': '2017-01-26',
 }
 """
@@ -22,11 +22,19 @@ http://shishu.info/2016/06/how-to-download-your-fitbit-second-level-data-without
 """
 def read_data(config):
    # TODO: get OAuth Token programmatically. 
+   #
    # For now, please generate token by hand. Use the Fitbit Tutorial page:
    #
    #     https://dev.fitbit.com/apps/oauthinteractivetutorial
    #
-   # Save the resulting token in the 'fitbit-heart-rate.json' config file as the 'OAuth_Token'.
+   # Save the resulting token in the config file 'fitbit-heart-rate.json' as 'OAuth_Token'.
+   #
+   # OAuth config items currently not used:
+   #    'OAuth_Client_ID'
+   #    'OAuth_Client_Secret'
+   #    'OAuth_Authorization_URI'
+   #    'OAuth_Token_Request_URI'
+   #    'Redirect_URI'
 
    # List of dates in yyyy-mm-dd format
    datelist = pd.date_range(start = pd.to_datetime(config['Start_Date']), end = pd.to_datetime(config['End_Date'])).tolist()
