@@ -1,61 +1,62 @@
 from flask import Flask, request
 from flask_restful import reqparse, abort, Api, Resource
+import json
 
 app = Flask(__name__)
 api = Api(app)
 
-TODOS = {
-    'todo1': {'task': 'build an API'},
-    'todo2': {'task': '?????'},
-    'todo3': {'task': 'profit!'},
-}
+ALOG = []
+
+alog_filename = '2017-02-07_alog.txt'
 
 
-def abort_if_todo_doesnt_exist(todo_id):
-    if todo_id not in TODOS:
-        abort(404, message="Todo {} doesn't exist".format(todo_id))
+def append_alog_entry(entry):
+    ALOG.append(entry)
+    with open(alog_filename, 'a') as f:
+        f.write('\n')
+        json.dump(entry, f)
+
+
+def abort_if_entry_doesnt_exist(entry_id):
+    # todo: search for entry
+    if len(ALOG) == 0:
+        abort(404, message="Todo {} doesn't exist".format(entry_id))
 
 parser = reqparse.RequestParser()
 parser.add_argument('task')
 
 
-# Todo
-# shows a single todo item and lets you delete a todo item
-class Todo(Resource):
-    def get(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        return TODOS[todo_id]
+class ALogEntry(Resource):
+    def get(self, entry_id):
+        abort_if_entry_doesnt_exist(entry_id)
+        # todo: lookup and return something meaningful
+        return ALOG[0]
 
-    def delete(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        del TODOS[todo_id]
+    def delete(self, entry_id):
+        abort_if_entry_doesnt_exist(entry_id)
+        # todo: lookup and delete the right one
+        del ALOG[0]
         return '', 204
 
-    def put(self, todo_id):
-        args = parser.parse_args()
-        task = {'task': args['task']}
-        TODOS[todo_id] = task
-        return task, 201
+    def put(self, entry_id):
+        abort_if_entry_doesnt_exist(entry_id)
+        json_body = request.get_json()
+        # todo: lookup and replace the right one
+        ALOG[0] = json_body
+        return json_body, 201
 
 
-# TodoList
-# shows a list of all todos, and lets you POST to add new tasks
-class TodoList(Resource):
+class ALog(Resource):
     def get(self):
-        return TODOS
+        return ALOG
 
     def post(self):
         json_body = request.get_json()
-        todo_id = int(max(TODOS.keys()).lstrip('todo')) + 1
-        todo_id = 'todo%i' % todo_id
-        TODOS[todo_id] = json_body
-        return TODOS[todo_id], 201
+        append_alog_entry(json_body)
+        return json_body, 201
 
-##
-## Actually setup the Api resource routing here
-##
-api.add_resource(TodoList, '/todos')
-api.add_resource(Todo, '/todos/<todo_id>')
+api.add_resource(ALog, '/alog')
+api.add_resource(ALogEntry, '/alog/<entry_id>')
 
 
 if __name__ == '__main__':
