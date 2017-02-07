@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
@@ -34,7 +34,7 @@ class Todo(Resource):
     def put(self, todo_id):
         args = parser.parse_args()
         task = {'task': args['task']}
-        TODqOS[todo_id] = task
+        TODOS[todo_id] = task
         return task, 201
 
 
@@ -45,10 +45,10 @@ class TodoList(Resource):
         return TODOS
 
     def post(self):
-        args = parser.parse_args()
+        json_body = request.get_json()
         todo_id = int(max(TODOS.keys()).lstrip('todo')) + 1
         todo_id = 'todo%i' % todo_id
-        TODOS[todo_id] = {'task': args['task']}
+        TODOS[todo_id] = json_body
         return TODOS[todo_id], 201
 
 ##
