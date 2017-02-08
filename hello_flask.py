@@ -17,6 +17,17 @@ def append_alog_entry(entry):
         json.dump(entry, f)
 
 
+def find_log_entry(entry):
+    with open(alog_filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if len(line) > 0:
+                existing_entry = json.loads(line)
+                if existing_entry is not None and entry['time'] == existing_entry['time']:
+                    return True
+    return False
+
+
 def abort_if_entry_doesnt_exist(entry_id):
     # todo: search for entry
     if len(ALOG) == 0:
@@ -55,7 +66,20 @@ class ALog(Resource):
         append_alog_entry(json_body)
         return json_body, 201
 
+
+class ALogRetry(Resource):
+    def post(self):
+        json_body = request.get_json()
+        if json_body is None:
+            return '{"result": "Send JSON data type please."}', 201
+        if find_log_entry(json_body):
+            return '{"result": "duplicate"}', 201
+        append_alog_entry(json_body)
+        return '{"result": "success"}', 201
+
+
 api.add_resource(ALog, '/alog')
+api.add_resource(ALogRetry, '/retry')
 api.add_resource(ALogEntry, '/alog/<entry_id>')
 
 
