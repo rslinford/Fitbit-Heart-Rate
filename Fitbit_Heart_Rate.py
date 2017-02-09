@@ -136,7 +136,7 @@ http://shishu.info/2016/06/how-to-download-your-fitbit-second-level-data-without
 
 
 def download_fitbit_data(config):
-    # TODO: get OAuth Token programmatically.
+    # TODO: get OAuth Token pragmatically.
     #
     # For now, please generate token by hand. Use the Fitbit Tutorial page:
     #
