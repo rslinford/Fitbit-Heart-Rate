@@ -7,7 +7,7 @@ api = Api(app)
 
 ALOG = []
 
-alog_filename = '2017-02-07_alog.txt'
+alog_filename = '2017-02-08_alog.txt'
 
 
 def append_alog_entry(entry):
