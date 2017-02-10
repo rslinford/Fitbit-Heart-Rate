@@ -5,6 +5,7 @@ import matplotlib.dates as md
 import matplotlib.pyplot as plt
 import pandas as pd
 import requests
+import glob
 import rsl.json_config as json_config
 from scipy.signal import savgol_filter
 
@@ -20,6 +21,32 @@ default_config = {
     'Start_Date': '2017-01-24',
     'End_Date': '2017-01-26',
 }
+
+
+def read_alog_events(date):
+    entry_list = []
+    for fn in glob.glob('*_alog.txt'):
+        with open(fn, 'r') as f:
+            for line in f:
+                if date in line:
+                    entry_list.append(json.loads(line))
+    return entry_list
+
+
+def parse_timestamp_ignore_tz(timestamp):
+    return pd.to_datetime(timestamp[:-6])
+
+
+def alog_weather_data(events):
+    time_axis, temperature_axis, humidity_axis = [], [], []
+    for e in events:
+        weather = e.get('Weather', None)
+        if weather is None:
+            continue
+        temperature_axis.append(weather['temperature'])
+        humidity_axis.append(weather['humidity'])
+        time_axis.append(parse_timestamp_ignore_tz(e['time']))
+    return time_axis, temperature_axis, humidity_axis
 
 
 def graph_file_contents(json_filename):
@@ -42,7 +69,7 @@ def graph_file_contents(json_filename):
 
 
 def graph_multi_day(datelist):
-    plt.figure()
+    plt.figure(figsize=(18,10))
     ax = plt.gca()
     xfmt = md.DateFormatter('%Y-%m-%d')
     ax.xaxis.set_major_formatter(xfmt)
@@ -54,27 +81,25 @@ def graph_multi_day(datelist):
         n = len(time_axis)
         # plt.plot(time_axis, hr_axis, label=date + ' raw', linewidth=1.0, color='cyan')
 
-        filtered_1 = savgol_filter(hr_axis, 5, 2)
+        filtered_1 = savgol_filter(hr_axis, 11, 2)
         filtered_1_min = min(filtered_1)
+        filtered_1_max = max(filtered_1)
         plt.plot(time_axis, filtered_1, label=date, linewidth=1.0)
-        plt.plot(time_axis, [filtered_1_min for i in range(n)], label=date, linewidth=1.0, color='black')
+        plt.plot(time_axis, [filtered_1_min for i in range(n)], label=date, linewidth=1.0, color='gray')
+        plt.plot(time_axis, [filtered_1_max for i in range(n)], label=date, linewidth=1.0, color='gray')
 
-        filtered_2 = savgol_filter(hr_axis, 51, 2)
-        filtered_2_min = min(filtered_2)
-        plt.plot(time_axis, [filtered_2_min for i in range(n)], label=date, linewidth=1.0, color='gray')
-        plt.plot(time_axis, filtered_2, label=date, linewidth=1.0)
-
-        filtered_3 = savgol_filter(hr_axis, 401, 2)
-        filtered_3_min = min(filtered_3)
-        plt.plot(time_axis, [filtered_3_min for i in range(n)], label=date, linewidth=1.0, color='brown')
-        plt.plot(time_axis, filtered_3, label=date, linewidth=1.0)
+        events = read_alog_events(date)
+        time_axis, temperature_axis, humidity_axis = alog_weather_data(events)
+        plt.plot(time_axis, temperature_axis, label='Degrees F', linewidth=1.0, color='blue')
+        plt.plot(time_axis, humidity_axis, label='Humidity', linewidth=1.0, color='cyan')
 
     title = '%s to %s' % (datelist[0], datelist[len(datelist) - 1])
     plt.xlabel("Time")
     plt.ylabel("Heart Rate")
     plt.title(title)
     plt.legend(loc="upper left")
-    plt.show()
+    plt.savefig("graph.png")
+    # plt.show()
 
 
 def json_to_xml(json_filename):

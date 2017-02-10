@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_restful import reqparse, abort, Api, Resource
 import json
 
@@ -7,7 +7,7 @@ api = Api(app)
 
 ALOG = []
 
-alog_filename = '2017-02-08_alog.txt'
+alog_filename = '2017-02-09_alog.txt'
 
 
 def append_alog_entry(entry):
@@ -82,6 +82,9 @@ api.add_resource(ALog, '/alog')
 api.add_resource(ALogRetry, '/retry')
 api.add_resource(ALogEntry, '/alog/<entry_id>')
 
+@app.route('/graph')
+def graph():
+    return send_file('graph.png', attachment_filename='graph.png', mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
