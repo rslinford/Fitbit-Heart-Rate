@@ -43,10 +43,21 @@ def alog_weather_data(events):
         weather = e.get('Weather', None)
         if weather is None:
             continue
+        time_axis.append(parse_timestamp_ignore_tz(e['time']))
         temperature_axis.append(weather['temperature'])
         humidity_axis.append(weather['humidity'])
-        time_axis.append(parse_timestamp_ignore_tz(e['time']))
     return time_axis, temperature_axis, humidity_axis
+
+def alog_location_data(events):
+    time_axis, lat_axis, lon_axis = [], [], []
+    for e in events:
+        location = e.get('Location', None)
+        if location is None:
+            continue
+        time_axis.append(parse_timestamp_ignore_tz(e['time']))
+        lat_axis.append(location['lat'])
+        lon_axis.append(location['lon'])
+    return time_axis, lat_axis, lon_axis
 
 
 def graph_file_contents(json_filename):
@@ -69,14 +80,13 @@ def graph_file_contents(json_filename):
 
 
 def graph_multi_day(datelist):
-    plt.figure(figsize=(18,10))
+    plt.figure(figsize=(18, 10))
     ax = plt.gca()
-    xfmt = md.DateFormatter('%Y-%m-%d')
-    ax.xaxis.set_major_formatter(xfmt)
+    ax.xaxis.set_major_formatter(md.DateFormatter('%Y-%m-%d'))
 
     for date in datelist:
         filename = make_filename(date)
-        print('Graphing %s' % (date))
+        print('Graphing %s' % date)
         time_axis, hr_axis = json_to_data(filename)
         n = len(time_axis)
         # plt.plot(time_axis, hr_axis, label=date + ' raw', linewidth=1.0, color='cyan')
@@ -98,8 +108,26 @@ def graph_multi_day(datelist):
     plt.ylabel("Heart Rate")
     plt.title(title)
     plt.legend(loc="upper left")
-    plt.savefig("graph.png")
-    # plt.show()
+    # plt.savefig("graph.png")
+    plt.show()
+
+
+def graph_location(datelist):
+    plt.figure(figsize=(18, 10))
+
+    for date in datelist:
+        print('Graphing %s' % date)
+        events = read_alog_events(date)
+        time_axis, lat_axis, lon_axis = alog_location_data(events);
+        plt.plot(lon_axis, lat_axis, label='Lat Lon', linewidth=1.0, color='blue')
+
+    title = 'Location %s to %s' % (datelist[0], datelist[len(datelist) - 1])
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+    plt.title(title)
+    plt.legend(loc="upper left")
+    # plt.savefig("geo_graph.png")
+    plt.show()
 
 
 def json_to_xml(json_filename):
@@ -216,6 +244,7 @@ def main():
 
     download_fitbit_data(config)
     graph_multi_day(make_datelist(config))
+    graph_location(make_datelist(config))
 
 
 if __name__ == '__main__':
