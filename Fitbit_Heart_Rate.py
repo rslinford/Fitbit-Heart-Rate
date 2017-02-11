@@ -1,6 +1,8 @@
 import json
 import os
 from time import sleep
+import matplotlib as mpl
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.dates as md
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -48,13 +50,18 @@ def alog_weather_data(events):
         humidity_axis.append(weather['humidity'])
     return time_axis, temperature_axis, humidity_axis
 
+
+def str_timestamp_to_unix_int(timestamp):
+    return parse_timestamp_ignore_tz(timestamp).value / 10**6
+
+
 def alog_location_data(events):
     time_axis, lat_axis, lon_axis = [], [], []
     for e in events:
         location = e.get('Location', None)
         if location is None:
             continue
-        time_axis.append(parse_timestamp_ignore_tz(e['time']))
+        time_axis.append(str_timestamp_to_unix_int(e['time']))
         lat_axis.append(location['lat'])
         lon_axis.append(location['lon'])
     return time_axis, lat_axis, lon_axis
@@ -113,17 +120,20 @@ def graph_multi_day(datelist):
 
 
 def graph_location(datelist):
-    plt.figure(figsize=(18, 10))
+    mpl.rcParams['legend.fontsize'] = 10
+    fig = plt.figure(figsize=(18, 10))
+    ax = fig.gca(projection='3d')
 
     for date in datelist:
         print('Graphing %s' % date)
         events = read_alog_events(date)
         time_axis, lat_axis, lon_axis = alog_location_data(events);
-        plt.plot(lon_axis, lat_axis, label='Lat Lon', linewidth=1.0, color='blue')
+        ax.plot(lon_axis, lat_axis, time_axis, label='Location %s' % date)
+        # plt.plot(lon_axis, lat_axis, label='Lat Lon', linewidth=1.0, color='blue')
 
     title = 'Location %s to %s' % (datelist[0], datelist[len(datelist) - 1])
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
+    # plt.xlabel("Longitude")
+    # plt.ylabel("Latitude")
     plt.title(title)
     plt.legend(loc="upper left")
     # plt.savefig("geo_graph.png")
@@ -245,7 +255,6 @@ def main():
     download_fitbit_data(config)
     graph_multi_day(make_datelist(config))
     graph_location(make_datelist(config))
-
 
 if __name__ == '__main__':
     main()
