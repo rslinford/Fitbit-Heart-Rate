@@ -90,12 +90,14 @@ api.add_resource(ALogEntry, '/alog/<entry_id>')
 
 @app.route('/graph/hr')
 def graph_hr():
+    fbit.download_fitbit_data(config)
     fbit.graph_multi_day(config, fbit.make_datelist(config))
     return send_file(config['HR_Graph_Filename'], attachment_filename='graph.png', mimetype='image/png')
 
 
 @app.route('/graph/latlon')
 def graph_latlon():
+    fbit.download_fitbit_data(config)
     fbit.graph_location(config, fbit.make_datelist(config))
     return send_file(config['Lat_Lon_Graph_Filename'], attachment_filename='graph.png', mimetype='image/png')
 
