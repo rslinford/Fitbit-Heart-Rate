@@ -1,13 +1,14 @@
+import glob
 import json
 import os
 from time import sleep
+
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.dates as md
 import matplotlib.pyplot as plt
 import pandas as pd
 import requests
-import glob
 import rsl.json_config as json_config
 from scipy.signal import savgol_filter
 
@@ -86,7 +87,7 @@ def graph_file_contents(json_filename):
     plt.show()
 
 
-def graph_multi_day(datelist):
+def graph_multi_day(config, datelist):
     plt.figure(figsize=(18, 10))
     ax = plt.gca()
     ax.xaxis.set_major_formatter(md.DateFormatter('%Y-%m-%d'))
@@ -115,11 +116,11 @@ def graph_multi_day(datelist):
     plt.ylabel("Heart Rate")
     plt.title(title)
     plt.legend(loc="upper left")
-    # plt.savefig("graph.png")
-    plt.show()
+    plt.savefig(config['HR_Graph_Filename'])
+    # plt.show()
 
 
-def graph_location(datelist):
+def graph_location(config, datelist):
     mpl.rcParams['legend.fontsize'] = 10
     fig = plt.figure(figsize=(18, 10))
     ax = fig.gca(projection='3d')
@@ -136,8 +137,8 @@ def graph_location(datelist):
     # plt.ylabel("Latitude")
     plt.title(title)
     plt.legend(loc="upper left")
-    # plt.savefig("geo_graph.png")
-    plt.show()
+    plt.savefig(config['Lat_Lon_Graph_Filename'])
+    # plt.show()
 
 
 def json_to_xml(json_filename):
@@ -253,8 +254,8 @@ def main():
         return 1
 
     download_fitbit_data(config)
-    graph_multi_day(make_datelist(config))
-    graph_location(make_datelist(config))
+    graph_multi_day(config, make_datelist(config))
+    graph_location(config, make_datelist(config))
 
 if __name__ == '__main__':
     main()
